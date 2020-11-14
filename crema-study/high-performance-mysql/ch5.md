@@ -1,0 +1,43 @@
+- Poor Indexing is a leading cause of real-world performance issues
+- Optimal indexes boost performance by many orders of magnitude, and may require you to rewrite queries.
+
+- Indexing basics
+  - Think of indexes in a book
+  - Index contains values from one or more columns from row
+  - Still have to care about indexes if you happen to use ORMs, because ORMs rarely produce index-friendly queries
+
+- Types of indexes
+  - Designed to perform well for different purposes
+  - B-Tree indexes
+    - All values are stored in order, and each leaf has same distance from root node
+    - Useful for searching for ranges of data: i.e. Find a name that starts with J, only in names prefixed with I to K.
+    - Why B+ tree over B tree?
+      - Data is only stored in leaf nodes, and each data fragment is linked.
+      - Useful for sequential access & relatively simple data manipulation
+    - Types of queries that can use a B-Tree index
+      - Most important thing is, B-Tree index is not useful if you are not using queries that cover indexed data from the left, i.e. querying data by 'last_name' when a 'name' column is indexed.
+  - Hash indexes
+    - Store <i>hash codes</i> of indexed columns
+    - A significant drawback: Doesn't support partial matching or range queries.
+
+- Benefits of indexes
+  - Enables server to navigate quickly to desired data (already discussed)
+  - Reduces the amount of data the server has to examine in some queries (some data is already in the index)
+  - Avoid sorting, temp tables
+  - Turns random I/O to sequential I/O
+
+- Indexing strategies
+  - Isolating the column
+    - Indexed column should be alone at one side of the where clause. i.e. "WHERE actor_id = 4": indexable, "WHERE actor_id + 1 = 5": not indexable.
+  - Prefix indexes
+    - Prefix indexes short enough to save space, but long enough for index selectivity. Selectivity is 1/n for unique index.
+    - Common case: Prefix index on long hexadecimal keys.
+  - Multicolumn indexes
+    - 'Put indexes on cols that appear in where clause?' very wrong!
+    - Index merging: usually an indication of poorly designed index.
+  - Choosing a good column order
+    - Depends vastly on type and style of data, but usually a rule of thumb: place the most selective column in front.
+    - Putting the most selective column up front is usually a way to make the whole index most selective.
+    - To be certain, there are tools to figure out worst cases.
+    - Or look at the cardinality of columns across the board.
+    - Beware of edge cases: be careful not to assume that average-case performance is representative of special-case performance

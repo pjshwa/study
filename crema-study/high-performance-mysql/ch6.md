@@ -1,0 +1,72 @@
+- Optimizing queries are crucial for performance, but it is also what ORMs are good for.
+
+- Why are queries slow?
+  - Queries are composed of subtasks, which consume time
+  - Optimize subtasks by
+    - Eliminating them
+    - Making them happen fewer times
+    - Making them happen more quickly
+  - Profile a query to see what its subtasks are, in detail
+  - Query execution includes 'calls' which take time in various kind of operations
+
+- Slow Query Basics: Optimize Data Access
+  - Are You Asking the Database for Data You Don’t Need?: Typical mistakes
+    - Fetching more rows than needed
+    - Fetching all columns from a multitable join
+    - Fetching all columns
+    - Fetching the same data repeatedly: N+1 query problem
+  - Is MySQL Examining Too Much Data?
+    - Response time = Service time + Queue time. Queue time varies a lot depending on load conditions.
+    - Rows examined vs Rows returned
+    - Access types
+      - Full table scan
+      - Index scan
+      - Range scan
+      - Unique index lookups
+      - Constants
+    - Essentially, queries that can utilize these mentioned access types will be faster.
+    - Sophisticated fixes
+      - Use covering indexes
+      - Change database schema
+      - Rewrite the query
+
+- Ways to Restructure Queries
+  - Complex queries vs Many queries: Fewer queries are still better with network speed improvements and all, but there are cases where small, simpler queries are more efficient than one complex query.
+  - Chopping up a query
+    - Reduces the total cost significantly.
+    - 'Select' statement for example: reduces memory swap.
+  - Join Decomposition
+    - May utilize lots of MySQL's caching features
+    - IN() list might be more efficient
+    - ORM doesn't usually do join operation unless explicitly stated
+  - Finding a review?
+
+- Query Execution Basics
+  - 5 steps
+    - Client sends query to server
+    - Check the query cache
+    - Server parses & preprocesses & optimizes the query to a query execution plan.
+    - Execution engine executes the plan by making calls to the storage engine.
+    - Server sends result back to client.
+  - The MySQL Client/Server Protocol
+    - Like playing ball: the other side must fetch the entire message before responding.
+    - Client sends query as a single packet; the server may refuse the packet if it exceeds the configurated size.
+    - Client must wait for the ENTIRE dataset the server sends; this is why appropriate LIMIT clause is important.
+    - Default behavior: Server sends all data at once, and release locks and everything. Buffered or unbuffered
+    - Query states
+      - Each mysql connection has a query state.
+      - Should conduct diagnostics if simple states like 'statistics' happen to consume large amount of time.
+  - The Query Cache
+    - Returns cached data set if the query is an exact match.
+    - Query is never parsed.
+  - The Query Optimization Process
+    - Parser: builds 'parse tree' from the query.
+    - Preprocessor: checks existence, sort out ambiguous names, checks privileges
+    - Optimizer: turns the 'parse tree' into a query execution plan.
+      - Cost-based. Things it considers are:
+        - Pages per table or index
+        - Cardinality of indexes
+        - Length of rows and keys
+        - Key distribution
+      - Static optimizations: Transforming the query by algebraic rules. Will always be valid.
+      - Dynamic optimizations: Transforming the query based on context. Must reevaluate every time.
